@@ -44,20 +44,27 @@ public class PageTesting {
         }
     }
 
-    /**
-     *
-     */
-    public static interface Action<T extends Element, X> {
-        X apply(T t);
-    }
+    public static class IsAnyOptionSelected {
 
-    public static class IsAnyOptionSelected implements Action<CheckBox, Boolean> {
-        @Override
-        public Boolean apply(CheckBox checkBox) {
+        public static Boolean apply(CheckBox checkBox) {
             for (Boolean b : checkBox.getOptions().values()) {
                 if (b) return true;
             }
             return false;
+        }
+    }
+
+    public static class SelectOption {
+        public static void apply(CheckBox checkBox, String option) {
+            if (checkBox.getOptions().containsKey(option)) {
+                checkBox.getOptions().put(option, true);
+            }
+        }
+    }
+
+    public static class IsOptionSelected {
+        public static Boolean apply(CheckBox checkBox, String option) {
+            return checkBox.getOptions().containsKey(option) && checkBox.getOptions().get(option);
         }
     }
 
@@ -71,8 +78,13 @@ public class PageTesting {
             elements.add(element);
         }
 
-        public Element findElement(String s) {
-            return elements.stream().filter(e -> e.getName().equals(s)).findFirst().get();
+        public <T extends Element> T findElement(String s) {
+            for (Element element : elements) {
+                if (element.getName().equals(s)) {
+                    return (T) element;
+                }
+            }
+            return null;
         }
     }
 
@@ -85,12 +97,13 @@ public class PageTesting {
         mySuperAwesomePage.addElement(gender);
 
         //is any gender selected
-        CheckBox checkBox = (CheckBox) mySuperAwesomePage.findElement("gender");
+        CheckBox checkBox = mySuperAwesomePage.findElement("gender");
 
+        System.out.println(IsAnyOptionSelected.apply(checkBox));
 
-        IsAnyOptionSelected isAnyOptionSelected = new IsAnyOptionSelected();
-        boolean b = isAnyOptionSelected.apply(checkBox);
-        System.out.println(b);
+        SelectOption.apply(checkBox, "male");
+
+        System.out.println(IsAnyOptionSelected.apply(checkBox));
 
     }
 
